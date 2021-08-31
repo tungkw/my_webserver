@@ -4,6 +4,7 @@
 #include <sys/epoll.h>
 #include <vector>
 #include <unistd.h>
+#include <fcntl.h>
 
 
 class Epoll{
@@ -17,6 +18,8 @@ public:
     int get_fd(int i);
     uint32_t get_events(int i);
 private:
+    void set_block(int fd, bool block);
+
     int fd_epoll;
     std::vector<struct epoll_event> epoll_ret;
 };

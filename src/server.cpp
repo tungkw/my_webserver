@@ -8,6 +8,7 @@ Server::Server(
     int max_nfd
 ){
     this->port = port;
+    thread_pool = new ThreadPool();
     epoll_handler = new Epoll(max_nfd);
     init_socket();
 }
@@ -25,27 +26,26 @@ void Server::start(){
             perror("wait");
             exit(-1);
         }
-        std::cout << num_events << std::endl;
+        
         for(int i=0; i<num_events; i++){
             int fd = epoll_handler->get_fd(i);
             uint32_t events = epoll_handler->get_events(i);
 
-            std::cout << fd << std::endl;
             if(fd == fd_listen){
-                std::cout << "requesting" << std::endl;
-                
+                add_client();
             }
             else if(events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)){
-
+                //del_client();
             }
             else if(events & EPOLLIN){
-
+                //deal_read(fd);
+                thread_pool->add_task(std::bind(&Server::deal_read, this, fd));
             }
             else if(events & EPOLLOUT){
-
+                //deal_write();
             }
             else{
-
+                
             }
         }
     }
@@ -64,11 +64,6 @@ void Server::init_socket(){
     setsockopt(fd_listen, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
 
     bind(fd_listen, (sockaddr*)&addr, sizeof(addr));
-    ret = listen(fd_listen, 8);
-    if(ret == -1){
-        perror("listen");
-        exit(-1);
-    }
 
     ret = epoll_handler->add_fd(fd_listen, EPOLLIN);
     if(ret == -1){
@@ -76,9 +71,51 @@ void Server::init_socket(){
         exit(-1);
     }
 
-    //ret = fcntl(fd_listen, F_SETFL, fcntl(fd_listen, F_GETFD, 0) | O_NONBLOCK);
-    //if(ret == -1){
-    //    perror("set nonblock");
-    //    exit(-1);
-    //}
+    ret = listen(fd_listen, 8);
+    if(ret == -1){
+        perror("listen");
+        exit(-1);
+    }
+}
+
+void Server::add_client(){
+    std::cout << "new client" << std::endl;
+    sockaddr_in addr;
+    socklen_t len;
+    while(true){
+        int fd = accept(fd_listen, (sockaddr*)&addr, &len);
+        if(fd <= 0){return;}
+        epoll_handler->add_fd(fd, EPOLLIN);
+    }
+}
+
+void Server::del_client(int fd){
+    std::cout << "client close" << std::endl;
+    epoll_handler->del_fd(fd);
+    close(fd);
+}
+
+void Server::deal_read(int fd){
+    char buff[10];
+    while(true){
+        int len = read(fd, buff, 10);
+        if(len > 0){
+            std::cout << buff << std::endl;
+        }
+        else if(len == 0){
+            del_client(fd);
+            break;
+        }
+        else if(len == -1 && errno != EAGAIN){
+            perror("read");
+            exit(-1);
+        }
+        else{
+            break;
+        }
+    }
+}
+
+void Server::deal_write(int fd){
+
 }

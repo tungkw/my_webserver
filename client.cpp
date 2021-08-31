@@ -1,6 +1,8 @@
 #include <iostream>
 #include <arpa/inet.h>
-
+//#include <sys/socket.h>
+//#include <fcntl.h>
+#include <unistd.h>
 
 int main(){
     int fd = socket(PF_INET, SOCK_STREAM, 0);
@@ -15,7 +17,11 @@ int main(){
         exit(-1);
         
     }
-    std::cout << ret << std::endl;
+
     std::cout << "connected" << std::endl;
-    while(true);
+    char buff[6] = "hello";
+    while(true){
+        write(fd, buff, 6);
+        sleep(3);
+    }
 }

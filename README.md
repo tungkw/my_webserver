@@ -1,7 +1,14 @@
 - IO
-  - epoll
-  - xianchengchi
-  - shengchanzhexiaofeizhemoxing
-- function
-  - http
+  - epoll: I/O duolufuyong
+  - xianchengchi: reactor gaobingfa moxing
+  - xianchengtongbu: shengchanzhexiaofeizhemoxing
+  - guanbichaoshi
+- http
+  - zhengzebiaodashi
+  - zhuangtaiji
+  - ziyuanqingqiu
 - database
+  - RAII shujukulianjiechi
+- log
+  - danlimoshi
+  - zhuseduilie
