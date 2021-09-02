@@ -1,7 +1,6 @@
 #include <iostream>
+#include <string>
 #include <arpa/inet.h>
-//#include <sys/socket.h>
-//#include <fcntl.h>
 #include <unistd.h>
 
 int main(){
@@ -19,9 +18,11 @@ int main(){
     }
 
     std::cout << "connected" << std::endl;
-    char buff[6] = "hello";
+
+    std::string req("GET / 1.1\r\nstyle: .png\r\n\r\nblabla");
+    const char *buf = req.c_str();
+    write(fd, buf, req.length());
     while(true){
-        write(fd, buff, 6);
         sleep(3);
     }
 }

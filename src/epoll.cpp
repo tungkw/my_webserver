@@ -1,12 +1,12 @@
 #include "epoll.h"
 
-Epoll::Epoll(int max_nfd){
+Epoll::Epoll(int max_events){
     fd_epoll = epoll_create(512);
     if(fd_epoll == -1){
         perror("create epoll");
         exit(-1);
     }
-    epoll_ret = std::vector<epoll_event>(max_nfd);
+    epoll_ret = std::vector<epoll_event>(max_events);
 }
 
 Epoll::~Epoll(){
@@ -24,7 +24,7 @@ bool Epoll::add_fd(int fd, uint32_t events){
 bool Epoll::mod_fd(int fd, uint32_t events){
     epoll_event ev = {0};
     ev.data.fd = fd;
-    ev.events = events;
+    ev.events = events | EPOLLET;
     return epoll_ctl(fd_epoll, EPOLL_CTL_MOD, fd, &ev);
 }
 

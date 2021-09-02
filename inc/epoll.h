@@ -9,7 +9,7 @@
 
 class Epoll{
 public:
-    Epoll(int max_nfd=1024);
+    Epoll(int max_events=1024);
     ~Epoll();
     bool add_fd(int fd, uint32_t events);
     bool mod_fd(int fd, uint32_t events);

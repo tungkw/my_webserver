@@ -4,6 +4,7 @@
   - xianchengtongbu: shengchanzhexiaofeizhemoxing
   - guanbichaoshi
 - http
+  - STL vector request/response buffer
   - zhengzebiaodashi
   - zhuangtaiji
   - ziyuanqingqiu

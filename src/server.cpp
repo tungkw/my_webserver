@@ -39,10 +39,10 @@ void Server::start(){
             }
             else if(events & EPOLLIN){
                 //deal_read(fd);
-                thread_pool->add_task(std::bind(&Server::deal_read, this, fd));
+                thread_pool->add_task(std::bind(&Server::deal_read, this, clients.at(fd)));
             }
             else if(events & EPOLLOUT){
-                //deal_write();
+                thread_pool->add_task(std::bind(&Server::deal_write, this, clients.at(fd)));
             }
             else{
                 
@@ -84,38 +84,43 @@ void Server::add_client(){
     socklen_t len;
     while(true){
         int fd = accept(fd_listen, (sockaddr*)&addr, &len);
-        if(fd <= 0){return;}
+        if(fd <= 0){break;}
         epoll_handler->add_fd(fd, EPOLLIN);
+        clients.insert(std::make_pair(fd, new Client(fd)));
     }
+    std::cout << "num of clients " << clients.size() << std::endl;
 }
 
 void Server::del_client(int fd){
     std::cout << "client close" << std::endl;
     epoll_handler->del_fd(fd);
     close(fd);
+    delete clients.at(fd);
+    clients.erase(fd);
 }
 
-void Server::deal_read(int fd){
-    char buff[10];
-    while(true){
-        int len = read(fd, buff, 10);
-        if(len > 0){
-            std::cout << buff << std::endl;
-        }
-        else if(len == 0){
-            del_client(fd);
-            break;
-        }
-        else if(len == -1 && errno != EAGAIN){
-            perror("read");
-            exit(-1);
-        }
-        else{
-            break;
-        }
+void Server::deal_read(Client *client){
+    if(!client->read_data()) del_client(client->fd);
+    if(http_request_sparse(client->read_buffer, client->req)){
+        // std::cout << req.act << std::endl;
+        // std::cout << req.url << std::endl;
+        // std::cout << req.ver << std::endl;
+        // for(auto iter = req.feas.begin(); iter != req.feas.end(); iter++){
+        //     std::cout << iter->first << " : " << iter->second << std::endl;
+        // }
+        // std::cout << req.cont << std::endl;
+        client->read_buffer.clear();
+        process(client->req, client->res);
+        client->req = HTTPRequest();
+        http_response_build(client->res, client->write_buffer);
+        epoll_handler->mod_fd(client->fd, EPOLLOUT);
     }
 }
 
-void Server::deal_write(int fd){
-
+void Server::deal_write(Client *client){
+    std::cout << "write" << std::endl;
+    std::cout << client->write_buffer << std::endl;
+    std::cout << client->write_buffer.length() << std::endl;
+    std::cout << write(client->fd, client->write_buffer.c_str(), client->write_buffer.length()) << std::endl;
+    epoll_handler->mod_fd(client->fd, EPOLLIN);
 }
