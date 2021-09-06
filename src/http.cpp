@@ -1,4 +1,6 @@
 #include "http.h"
+#include <iostream>
+#include <map>
 
 
 /*
@@ -32,7 +34,6 @@ HEAD_FIN + '\n'     -> CONT_FIN
 */
 bool http_request_sparse(const std::string &buff, HTTPRequest &req){
     std::string key, val;
-    
     for(int i = 0 ; i < buff.length(); i++){
         char t = buff[i];
         switch (req.state)
@@ -86,7 +87,6 @@ bool http_request_sparse(const std::string &buff, HTTPRequest &req){
                 val += t;
                 req.state = HEAD_VAL;
             }
-            /* code */
             break;
         case HEAD_FIN:
             req.state = CONT_FIN;
@@ -108,7 +108,6 @@ bool http_request_sparse(const std::string &buff, HTTPRequest &req){
     }
     else return false;
 }
-
 
 bool http_response_build(const HTTPResponse &resp, std::string &buff){
     buff += resp.ver + " " + std::to_string(resp.sta) + " " + resp.des + "\r\n";

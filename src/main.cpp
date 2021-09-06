@@ -1,6 +1,8 @@
 #include "server.h"
+//#include <iostream>
 
 int main(){
-    Server my_server = Server(10000, 1024);
+    //std::cout << *((char*)(0)) << std::endl; 
+    Server my_server = Server(1316, 1024);
     my_server.start();
 }

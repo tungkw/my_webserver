@@ -17,14 +17,14 @@ bool Epoll::add_fd(int fd, uint32_t events){
     set_block(fd, false);
     epoll_event ev = {0};
     ev.data.fd = fd;
-    ev.events = events | EPOLLET;
+    ev.events = events | EPOLLET | EPOLLONESHOT;
     return epoll_ctl(fd_epoll, EPOLL_CTL_ADD, fd, &ev);
 }
 
 bool Epoll::mod_fd(int fd, uint32_t events){
     epoll_event ev = {0};
     ev.data.fd = fd;
-    ev.events = events | EPOLLET;
+    ev.events = events | EPOLLET | EPOLLONESHOT;
     return epoll_ctl(fd_epoll, EPOLL_CTL_MOD, fd, &ev);
 }
 
@@ -46,7 +46,6 @@ uint32_t Epoll::get_events(int i){
     return epoll_ret[i].events;
 }
 
-
 void Epoll::set_block(int fd, bool block){
     int ret;
     if(block){
@@ -57,6 +56,7 @@ void Epoll::set_block(int fd, bool block){
     }
     if(ret == -1){
         perror("set block");
+        std::cout << fd << std::endl;
         exit(-1);
     }
 }

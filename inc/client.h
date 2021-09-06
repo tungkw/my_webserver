@@ -8,10 +8,14 @@
 
 class Client{
 public:
-Client(int fd_):fd(fd_){}
-~Client(){close(fd);}
+Client():fd(-1), is_closed(true){}
+~Client(){close_fd();}
 bool read_data();
+bool write_data();
+void init(int fd_);
+void close_fd();
 
+bool is_closed;
 int fd;
 std::string read_buffer;
 std::string write_buffer;

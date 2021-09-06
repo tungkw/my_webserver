@@ -13,15 +13,15 @@ public:
 private:
     void init_socket();
     void add_client();
-    void del_client(int fd);
+    void del_client(Client *client);
     void deal_read(Client *client);
     void deal_write(Client *client);
 
     short port;
     int fd_listen;
-    Epoll *epoll_handler; // if not pointer, will construct once here and once in constructor;
+    Epoll *epoll_handler;
     ThreadPool *thread_pool;
-    std::map<int, Client*> clients;
+    std::map<int, Client> clients;
 };
 
 #endif
