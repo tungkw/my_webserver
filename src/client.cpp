@@ -14,7 +14,7 @@ bool Client::read_data(){
         }
         else if(len == -1 && errno != EAGAIN){
             perror("read");
-            std::cout << fd << std::endl;
+            LOG_ERROR("read %d", fd);
             exit(-1);
         }
         else{
@@ -28,8 +28,12 @@ bool Client::write_data(){
     int len = 0;
     while(true){
         len = write(fd, write_buffer.c_str(), write_buffer.length());
-        if(len < 0) return false;
-        else if(write_buffer.length() == len) break;
+        if(write_buffer.length() == len) break;
+        else if(len == -1 && errno != EAGAIN){
+            perror("write");
+            LOG_ERROR("write %d", fd);
+            exit(-1);
+        }
         else write_buffer = write_buffer.substr(len);
     }
     return true;

@@ -5,6 +5,7 @@
 #include <vector>
 #include <unistd.h>
 #include <fcntl.h>
+#include "log.h"
 
 
 class Epoll{

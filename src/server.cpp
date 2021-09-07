@@ -7,6 +7,7 @@ Server::Server(
     short port,
     int max_nfd
 ){
+    Log::Instance()->init("./log");
     this->port = port;
     thread_pool = new ThreadPool();
     epoll_handler = new Epoll(max_nfd);
@@ -35,21 +36,27 @@ void Server::init_socket(){
     ret = epoll_handler->add_fd(fd_listen, EPOLLIN);
     if(ret == -1){
         perror("add listen");
+        LOG_ERROR("add listen");
         exit(-1);
     }
 
     ret = listen(fd_listen, 8);
     if(ret == -1){
         perror("start listen");
+        LOG_ERROR("start listen");
         exit(-1);
     }
+
+    LOG_INFO("Server Initialized");
 }
 
 void Server::start(){
+    LOG_INFO("Server Started");
     while(true){
         int num_events = epoll_handler->wait(-1);
         if(num_events == -1){
             perror("epoll wait");
+            LOG_ERROR("epoll wait");
             exit(-1);
         }
         
@@ -85,6 +92,7 @@ void Server::add_client(){
         epoll_handler->add_fd(fd, EPOLLIN);
         clients.insert(std::make_pair(fd, Client()));
         clients[fd].init(fd);
+        LOG_INFO("connected %d", fd);
     }
     epoll_handler->mod_fd(fd_listen, EPOLLIN);
 }
@@ -92,6 +100,7 @@ void Server::add_client(){
 void Server::del_client(Client *client){
     epoll_handler->del_fd(client->fd);
     client->close_fd();
+    LOG_INFO("closed %d", client->fd);
 }
 
 void Server::deal_read(Client *client){

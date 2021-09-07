@@ -4,6 +4,7 @@
 #include "epoll.h"
 #include "thread_pool.h"
 #include "client.h"
+#include "log.h"
 
 class Server{
 public:

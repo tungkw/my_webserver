@@ -4,6 +4,7 @@ Epoll::Epoll(int max_events){
     fd_epoll = epoll_create(512);
     if(fd_epoll == -1){
         perror("create epoll");
+        LOG_ERROR("creat epoll");
         exit(-1);
     }
     epoll_ret = std::vector<epoll_event>(max_events);
@@ -56,7 +57,7 @@ void Epoll::set_block(int fd, bool block){
     }
     if(ret == -1){
         perror("set block");
-        std::cout << fd << std::endl;
+        LOG_ERROR("set block %d", fd);
         exit(-1);
     }
 }

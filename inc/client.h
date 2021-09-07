@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "http.h"
 #include "process.h"
+#include "log.h"
 
 class Client{
 public:
