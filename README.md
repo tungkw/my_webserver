@@ -32,3 +32,4 @@
 # log
 - need to close connection after write
 - ONESHOT remember to re-flag for listen_fd
+<!-- - std::bind cannot be passed by args in class instance initialized by new -->

@@ -5,10 +5,12 @@
 
 Server::Server(
     short port,
-    int max_nfd
+    int max_nfd,
+    time_t time_out
 ){
     Log::Instance()->init("./log");
     this->port = port;
+    this->time_out = time_out;
     thread_pool = new ThreadPool();
     epoll_handler = new Epoll(max_nfd);
     init_socket();
@@ -52,8 +54,13 @@ void Server::init_socket(){
 
 void Server::start(){
     LOG_INFO("Server Started");
+    time_t waittime = -1;
     while(true){
-        int num_events = epoll_handler->wait(-1);
+        // timer->check();
+        // waittime = timer->get_waittime() * 1000; // sec * 1000
+        int waittime = timer_->GetNextTick();
+
+        int num_events = epoll_handler->wait(waittime);
         if(num_events == -1){
             perror("epoll wait");
             LOG_ERROR("epoll wait");
@@ -89,21 +96,27 @@ void Server::add_client(){
     while(true){
         int fd = accept(fd_listen, (sockaddr*)&addr, &len);
         if(fd <= 0){break;}
+
         epoll_handler->add_fd(fd, EPOLLIN);
         clients.insert(std::make_pair(fd, Client()));
         clients[fd].init(fd);
+        // timer->add(fd, time_out, std::bind(&Server::del_client, this, &clients[fd]));
+        timer_->add(fd, time_out*1000, std::bind(&Server::del_client, this, &clients[fd]));
         LOG_INFO("connected %d", fd);
     }
     epoll_handler->mod_fd(fd_listen, EPOLLIN);
 }
 
 void Server::del_client(Client *client){
+    // timer->remove(client->fd);
     epoll_handler->del_fd(client->fd);
     client->close_fd();
     LOG_INFO("closed %d", client->fd);
 }
 
 void Server::deal_read(Client *client){
+    // timer->update(client->fd);
+    timer_->adjust(client->fd, time_out*1000);
     if(!client->read_data()){
         del_client(client);
     }
@@ -120,6 +133,8 @@ void Server::deal_read(Client *client){
 }
 
 void Server::deal_write(Client *client){
+    // timer->update(client->fd);
+    timer_->adjust(client->fd, time_out*1000);
     if(!client->write_data()){
         del_client(client);
     }
